@@ -71,7 +71,7 @@ CREATE TABLE [dbo].[Sales] (
     FOREIGN KEY (product_id) REFERENCES dbo.Products(product_id)
 ) ON [PRIMARY];
 ```
-</br></br>
+</br>
 
 The database schema establishes relationships between the tables using foreign key constraints. For example, the Products table is linked to the Suppliers table through the supplier_id column, and the Inventory and Sales tables are linked to the Products table through the product_id column.
 </br>
@@ -185,7 +185,7 @@ JOIN Sales s ON p.product_id = s.product_id
 GROUP BY p.category
 ORDER BY total_category_sales DESC;
 ```
-</br></br>
+</br>
 
 
 These queries provide a range of insights into the retail inventory management system, including inventory levels, sales performance, supplier relationships, and product popularity.
