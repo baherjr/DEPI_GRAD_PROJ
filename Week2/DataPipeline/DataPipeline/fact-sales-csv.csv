@@ -1,0 +1,7 @@
+sale_id,product_id,store_id,date_id,customer_id,quantity,total_amount
+1,1,1,1,1,1,999.99
+2,2,2,2,2,2,1199.98
+3,3,3,3,3,3,59.97
+4,4,4,4,4,1,89.99
+5,5,5,5,5,2,99.98
+

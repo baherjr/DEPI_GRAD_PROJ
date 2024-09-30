@@ -1,0 +1,7 @@
+customer_id,customer_name,email,city,state,country
+1,John Doe,john.doe@email.com,New York,NY,USA
+2,Jane Smith,jane.smith@email.com,Los Angeles,CA,USA
+3,Bob Johnson,bob.johnson@email.com,Chicago,IL,USA
+4,Alice Brown,alice.brown@email.com,Houston,TX,USA
+5,Charlie Wilson,charlie.wilson@email.com,Miami,FL,USA
+
