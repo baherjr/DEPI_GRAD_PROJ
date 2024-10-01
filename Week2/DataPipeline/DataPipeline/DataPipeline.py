@@ -93,8 +93,9 @@ def run_etl(csv_file_path, table_name):
 # Example usage
 if __name__ == "__main__":
     # Specify the paths to your CSV files
-    run_etl('dim-product-csv.csv', 'DIM_PRODUCT')
-    run_etl('dim-store-csv.csv', 'DIM_STORE')
-    run_etl('dim-date-csv.csv', 'DIM_DATE')
-    run_etl('dim-customer-csv.csv', 'DIM_CUSTOMER')
-    run_etl('fact-sales-csv.csv', 'FACT_SALES')
+    # run_etl('dim-product-csv.csv', 'DIM_PRODUCT')
+    # run_etl('dim-store-csv.csv', 'DIM_STORE')
+    # run_etl('dim-date-csv.csv', 'DIM_DATE')
+    # run_etl('dim-customer-csv.csv', 'DIM_CUSTOMER')
+    # run_etl('fact-sales-csv.csv', 'FACT_SALES')
+    pass
