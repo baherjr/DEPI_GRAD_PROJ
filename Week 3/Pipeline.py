@@ -2,6 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 import logging
 from urllib.parse import quote_plus  # For URL-encoding the password
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -9,10 +10,13 @@ logging.basicConfig(level=logging.INFO)
 
 # Define the connection to Azure SQL Database using SQLAlchemy
 def create_connection():
+    # Properly encode the password and construct the connection string
+    password = os.getenv('DB_PASSWORD')
+    encoded_password = quote_plus(password)  # URL-encode the password to handle special characters
 
     connection_string = (
-        "mssql+pyodbc://ATRXLO/RetailInventoryDWHStar?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
-
+        f"mssql+pyodbc://bahror:{encoded_password}@demandforecastdb.database.windows.net:1433/DemandForecastDB"
+        "?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=no&Connection+Timeout=30"
     )
 
     try:

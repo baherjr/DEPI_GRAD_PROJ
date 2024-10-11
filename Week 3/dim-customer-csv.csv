@@ -1,0 +1,52 @@
+customer_id,customer_name,email,city,state,country
+1,John Doe,john.doe@email.com,New York,NY,USA
+2,Jane Smith,jane.smith@email.com,Los Angeles,CA,USA
+3,Bob Johnson,bob.johnson@email.com,Chicago,IL,USA
+4,Alice Brown,alice.brown@email.com,Houston,TX,USA
+5,Charlie Wilson,charlie.wilson@email.com,Miami,FL,USA
+6,Emma Davis,emma.davis@email.com,Phoenix,AZ,USA
+7,Frank Miller,frank.miller@email.com,Philadelphia,PA,USA
+8,Grace Lee,grace.lee@email.com,San Antonio,TX,USA
+9,Henry Taylor,henry.taylor@email.com,San Diego,CA,USA
+10,Isabel Martinez,isabel.martinez@email.com,Dallas,TX,USA
+11,Jack Anderson,jack.anderson@email.com,San Jose,CA,USA
+12,Karen White,karen.white@email.com,Austin,TX,USA
+13,Liam Harris,liam.harris@email.com,Jacksonville,FL,USA
+14,Mia Clark,mia.clark@email.com,San Francisco,CA,USA
+15,Nathan Rodriguez,nathan.rodriguez@email.com,Indianapolis,IN,USA
+16,Olivia Lewis,olivia.lewis@email.com,Columbus,OH,USA
+17,Paul Walker,paul.walker@email.com,Fort Worth,TX,USA
+18,Quinn Moore,quinn.moore@email.com,Charlotte,NC,USA
+19,Rachel King,rachel.king@email.com,Seattle,WA,USA
+20,Samuel Scott,samuel.scott@email.com,Denver,CO,USA
+21,Tina Green,tina.green@email.com,Washington,DC,USA
+22,Ulysses Baker,ulysses.baker@email.com,Nashville,TN,USA
+23,Victoria Adams,victoria.adams@email.com,El Paso,TX,USA
+24,William Turner,william.turner@email.com,Boston,MA,USA
+25,Xena Campbell,xena.campbell@email.com,Portland,OR,USA
+26,Yannick Hall,yannick.hall@email.com,Las Vegas,NV,USA
+27,Zoe Phillips,zoe.phillips@email.com,Oklahoma City,OK,USA
+28,Adam Foster,adam.foster@email.com,Tucson,AZ,USA
+29,Brenda Ross,brenda.ross@email.com,Albuquerque,NM,USA
+30,Cameron Hughes,cameron.hughes@email.com,Fresno,CA,USA
+31,Danielle Ward,danielle.ward@email.com,Sacramento,CA,USA
+32,Ethan Butler,ethan.butler@email.com,Long Beach,CA,USA
+33,Fiona Simmons,fiona.simmons@email.com,Kansas City,MO,USA
+34,George Bryant,george.bryant@email.com,Mesa,AZ,USA
+35,Hannah Price,hannah.price@email.com,Atlanta,GA,USA
+36,Ian Cooper,ian.cooper@email.com,Virginia Beach,VA,USA
+37,Julia Reed,julia.reed@email.com,Omaha,NE,USA
+38,Kevin Morgan,kevin.morgan@email.com,Colorado Springs,CO,USA
+39,Laura Bell,laura.bell@email.com,Raleigh,NC,USA
+40,Michael Wood,michael.wood@email.com,Miami,FL,USA
+41,Natalie Cox,natalie.cox@email.com,Oakland,CA,USA
+42,Oscar Kelly,oscar.kelly@email.com,Minneapolis,MN,USA
+43,Pamela Gray,pamela.gray@email.com,Tulsa,OK,USA
+44,Quentin Wells,quentin.wells@email.com,Cleveland,OH,USA
+45,Rose Peterson,rose.peterson@email.com,Wichita,KS,USA
+46,Steven Bennett,steven.bennett@email.com,Arlington,TX,USA
+47,Tara Murphy,tara.murphy@email.com,New Orleans,LA,USA
+48,Uri Carter,uri.carter@email.com,Bakersfield,CA,USA
+49,Valerie Rogers,valerie.rogers@email.com,Tampa,FL,USA
+50,Walter Sanchez,walter.sanchez@email.com,Honolulu,HI,USA
+
