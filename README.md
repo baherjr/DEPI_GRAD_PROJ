@@ -328,7 +328,7 @@ CREATE INDEX idx_customer ON FACT_SALES(customer_id);
 
 ## Data Pipeline (DataPipeline.py)
 
-The data pipeline script (`DataPipeline.py`) handles the Extract, Transform, and Load (ETL) process for our data warehouse. Here's an overview of its main components:
+The `DataPipeline.py` script implements an Extract, Transform, and Load (ETL) process for our data warehouse. Here's a detailed overview of its main components:
 
 ### 1. Database Connection
 ```python
@@ -336,117 +336,122 @@ def create_connection():
     connection_string = (
         "mssql+pyodbc://ATRXLO/RetailInventoryDWHStar?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
     )
-    engine = create_engine(connection_string)
-    return engine
+    try:
+        engine = create_engine(connection_string)
+        conn = engine.connect()
+        logging.info("Connection successful")
+        return conn
+    except Exception as e:
+        logging.error(f"Connection failed: {e}")
+        return None
 ```
-This function establishes a connection to the SQL Server database using SQLAlchemy.
+This function establishes a connection to the SQL Server database using SQLAlchemy. It now returns a connection object and includes error handling with logging.
 
 ### 2. Extract Function
 ```python
 def extract(file_path):
     try:
         df = pd.read_csv(file_path)
-        print(f"Extracted {len(df)} records from {file_path}.")
+        logging.info(f"Extracted {len(df)} records from {file_path}.")
         return df
+    except FileNotFoundError:
+        logging.error(f"File not found: {file_path}")
+        return pd.DataFrame()
     except Exception as e:
-        print(f"Error during extraction: {e}")
+        logging.error(f"Error during extraction: {e}")
         return pd.DataFrame()
 ```
-This function reads data from a CSV file and returns it as a pandas DataFrame.
+This function reads data from a CSV file and returns it as a pandas DataFrame. It now includes specific error handling for FileNotFoundError and improved logging.
 
 ### 3. Transform Function
 ```python
-def transform(df):
-    # Handle missing values
-    if df.isnull().values.any():
-        print("Data contains missing values. Filling with default values or dropping rows.")
-        df.fillna({
-            'product_id': 0,
-            'product_name': 'Unknown',
-            # ... [other columns] ...
-        }, inplace=True)
+def transform(df, table_name):
+    # General cleaning: Handle missing values in all datasets
+    df.fillna({
+        'store_id': 0,
+        'store_name': 'Unknown',
+        'city': 'Unknown',
+        # ... (other columns)
+    }, inplace=True)
 
-    # Validate product_id (must be unique)
-    if 'product_id' in df.columns and not df['product_id'].is_unique:
-        print("Warning: Duplicate product_ids found.")
-        df.drop_duplicates(subset=['product_id'], inplace=True)
+    # Handle table-specific transformations
+    if table_name == 'DIM_PRODUCT':
+        # Product-specific transformations
+    elif table_name == 'DIM_STORE':
+        # Store-specific transformations
 
-    # Validate unit_price
+    # Generic data validation
     if 'unit_price' in df.columns:
-        df = df[df['unit_price'] >= 0]  # Drop negative prices
+        df = df[df['unit_price'] >= 0]
+    if 'quantity' in df.columns:
+        df = df[df['quantity'] >= 0]
 
-    print(f"Transformed data contains {len(df)} records after validation.")
     return df
 ```
-This function cleans and validates the data, handling missing values, duplicate product IDs, and negative prices.
+This function cleans and validates the data, handling missing values, applying table-specific transformations, and performing generic data validation. It now includes more comprehensive missing value handling and table-specific logic.
 
 ### 4. Load Function
 ```python
 def load(df, table_name):
-    engine = create_connection()
+    conn = create_connection()
+    if conn is None:
+        logging.error("No connection available to load data.")
+        return
+
     try:
-        df.to_sql(table_name, con=engine, if_exists='append', index=False)
-        print(f"Loaded {len(df)} records into {table_name}.")
+        df.to_sql(table_name, con=conn, if_exists='append', index=False)
+        logging.info(f"Loaded {len(df)} records into {table_name}.")
     except Exception as e:
-        print(f"Error during loading to {table_name}: {e}")
+        logging.error(f"Error during loading to {table_name}: {e}")
+    finally:
+        conn.close()
 ```
-This function loads the transformed data into the specified SQL Server table.
+This function loads the transformed data into the specified SQL Server table. It now includes proper connection management and error handling.
 
-### 5. Main ETL Function
+## 5. Verify Load Function
 ```python
-def run_etl(csv_file_path, table_name):
-    extracted_data = extract(csv_file_path)
-    if not extracted_data.empty:
-        transformed_data = transform(extracted_data)
-        load(transformed_data, table_name)
+def verify_load(table_name):
+    conn = create_connection()
+    if conn is None:
+        logging.error("No connection available to verify load.")
+        return
+
+    query = f"SELECT COUNT(*) FROM {table_name}"
+    count = pd.read_sql(query, conn)
+    print(f"{table_name} record count: {count.iloc[0, 0]}")
+    conn.close()
 ```
-This function orchestrates the entire ETL process for a given CSV file and table.
+This new function verifies the number of records in each table after the load process, providing a simple data quality check.
 
-## Database Configuration (config.py)
-
-The `config.py` file handles the database connection configuration:
-
+### 6. Main ETL Function
 ```python
-def get_connection():
-    try:
-        drivers = [driver for driver in pyodbc.drivers()]
-        print("Available ODBC drivers:", drivers)
+def run_etl(csv_file, table_name):
+    extracted_data = extract(csv_file)
+    logging.info(f"Extracted {len(extracted_data)} records from {csv_file}")
 
-        driver = next((driver for driver in drivers if 'SQL Server' in driver), None)
-        if not driver:
-            raise ValueError("No SQL Server ODBC driver found")
+    transformed_data = transform(extracted_data, table_name)
 
-        connection_string = (
-            f"mssql+pyodbc://ATRXLO/RetailInventoryDWHStar"
-            f"?driver={driver.replace(' ', '+')}"
-            "&trusted_connection=yes"
-        )
+    load(transformed_data, table_name)
 
-        print(f"Attempting to connect with: {connection_string}")
+    verify_load(table_name)
+```
+This function orchestrates the entire ETL process for a given CSV file and table, including the new verification step.
 
-        engine = create_engine(connection_string)
-        return engine.connect()
-    except SQLAlchemyError as e:
-        print(f"SQLAlchemy error occurred: {e}")
-        return None
-    except pyodbc.Error as e:
-        print(f"PYODBC error occurred: {e}")
-        return None
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return None
+### Main Execution
+The script ends with a main execution block that runs the ETL process for multiple tables:
+```python
+if __name__ == "__main__":
+    run_etl('dim-product-csv.csv', 'DIM_PRODUCT')
+    run_etl('dim-store-csv.csv', 'DIM_STORE')
+    run_etl('dim-date-csv.csv', 'DIM_DATE')
+    run_etl('dim-customer-csv.csv', 'DIM_CUSTOMER')
+    run_etl('fact-sales-csv.csv', 'FACT_SALES')
 ```
 
-This function:
-1. Lists available ODBC drivers
-2. Selects an appropriate SQL Server driver
-3. Constructs a connection string
-4. Attempts to create a database connection
-5. Handles various types of connection errors
+This structure allows for easy processing of multiple tables in sequence.
 
-## ETL Automation (automated-etl-script.py)
 
-To ensure regular updates of the data warehouse, an automation script has been implemented. This script schedules and runs the ETL jobs on a daily basis.
+
 
 ### Script Overview
 
