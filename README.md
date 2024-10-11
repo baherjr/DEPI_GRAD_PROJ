@@ -190,3 +190,142 @@ ORDER BY total_category_sales DESC;
 
 These queries provide a range of insights into the retail inventory management system, including inventory levels, sales performance, supplier relationships, and product popularity.
 </br>
+
+# Week 2: Data Warehousing and Python Integration
+
+## Overview
+This week focuses on implementing a data warehouse to consolidate inventory and sales data, and integrating Python scripts for data extraction, cleaning, and preparation.
+
+## Tasks
+
+### 1. Data Warehouse Implementation
+- **Objective**: Consolidate inventory and sales data for reporting and analysis.
+- **Tool**: Microsoft SQL Data Warehouse
+- **Steps**:
+  1. Design the data warehouse schema (Star Schema implemented)
+  2. Set up the Microsoft SQL Data Warehouse environment
+  3. Configure data storage and partitioning
+  4. Implement security measures and access controls
+
+### 2. Data Loading (ETL Process)
+- **Objective**: Integrate data into the warehouse using ETL processes.
+- **Steps**:
+  1. Extract data from source systems (e.g., inventory management, point of sale)
+  2. Transform data to fit the data warehouse schema
+  3. Load data into the appropriate tables in the data warehouse
+  4. Set up scheduling for regular data updates
+
+### 3. Python Scripting
+- **Objective**: Extract data from SQL database, clean it, and prepare for analysis.
+- **Tools**: Python (Pandas, SQLAlchemy)
+- **Steps**:
+  1. Set up Python environment with required libraries
+  2. Write scripts to connect to the SQL database using SQLAlchemy
+  3. Extract relevant data using SQL queries
+  4. Use Pandas for data cleaning and transformation
+  5. Prepare data for analysis (e.g., aggregations, feature engineering)
+
+## Deliverables
+
+1. **Data Warehouse Setup**
+   - Fully configured Microsoft SQL Data Warehouse
+   - Integrated inventory and sales data
+   - Documentation on schema design and data flow
+
+2. **Python Scripts**
+   - Script for data extraction from SQL database
+   - Script for data cleaning and preparation
+   - Documentation on how to run the scripts and their functionalities
+
+## Technical Specifications
+
+- **Data Warehouse**: Microsoft SQL Data Warehouse
+- **Programming Language**: Python 3.x
+- **Python Libraries**: 
+  - Pandas (for data manipulation)
+  - SQLAlchemy (for database connectivity)
+  - Any additional libraries used in the project
+
+## Data Warehouse Schema (Star Schema)
+
+### Dimension Tables
+
+1. **DIM_PRODUCT**
+   ```sql
+   CREATE TABLE DIM_PRODUCT (
+       product_id INT PRIMARY KEY,
+       product_name VARCHAR(100),
+       category VARCHAR(50),
+       unit_price DECIMAL(10, 2),
+       supplier_id INT
+   );
+   ```
+
+2. **DIM_STORE**
+   ```sql
+   CREATE TABLE DIM_STORE (
+       store_id INT PRIMARY KEY,
+       store_name VARCHAR(100),
+       city VARCHAR(50),
+       state VARCHAR(50),
+       country VARCHAR(50)
+   );
+   ```
+
+3. **DIM_DATE**
+   ```sql
+   CREATE TABLE DIM_DATE (
+       date_id INT PRIMARY KEY,
+       full_date DATE,
+       year INT,
+       quarter INT,
+       month INT,
+       day INT,
+       day_of_week VARCHAR(10)
+   );
+   ```
+
+4. **DIM_CUSTOMER**
+   ```sql
+   CREATE TABLE DIM_CUSTOMER (
+       customer_id INT PRIMARY KEY,
+       customer_name VARCHAR(100),
+       email VARCHAR(100),
+       city VARCHAR(50),
+       state VARCHAR(50),
+       country VARCHAR(50)
+   );
+   ```
+
+### Fact Table
+
+**FACT_SALES**
+```sql
+CREATE TABLE FACT_SALES (
+    sale_id INT PRIMARY KEY,
+    product_id INT,
+    store_id INT,
+    date_id INT,
+    customer_id INT,
+    quantity INT,
+    total_amount DECIMAL(10, 2),
+    FOREIGN KEY (product_id) REFERENCES DIM_PRODUCT(product_id),
+    FOREIGN KEY (store_id) REFERENCES DIM_STORE(store_id),
+    FOREIGN KEY (date_id) REFERENCES DIM_DATE(date_id),
+    FOREIGN KEY (customer_id) REFERENCES DIM_CUSTOMER(customer_id)
+);
+```
+
+### Indexes
+To improve query performance, the following indexes have been created:
+
+```sql
+CREATE INDEX idx_product ON FACT_SALES(product_id);
+CREATE INDEX idx_store ON FACT_SALES(store_id);
+CREATE INDEX idx_date ON FACT_SALES(date_id);
+CREATE INDEX idx_customer ON FACT_SALES(customer_id);
+```
+
+
+
+
