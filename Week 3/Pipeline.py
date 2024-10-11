@@ -2,16 +2,23 @@ import pandas as pd
 from sqlalchemy import create_engine
 import logging
 from urllib.parse import quote_plus  # For URL-encoding the password
+from dotenv import load_dotenv
 import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
+# Load environment variables from .env file
+load_dotenv()
+
 
 # Define the connection to Azure SQL Database using SQLAlchemy
 def create_connection():
-    # Properly encode the password and construct the connection string
+    # Retrieve the password from the environment variable
     password = os.getenv('DB_PASSWORD')
+    if not password:
+        raise ValueError("Database password not found in environment variables")
+
     encoded_password = quote_plus(password)  # URL-encode the password to handle special characters
 
     connection_string = (
@@ -27,7 +34,6 @@ def create_connection():
     except Exception as e:
         logging.error(f"Connection failed: {e}")
         return None
-
 
 # Extract function: Read data from CSV file
 def extract(file_path):
