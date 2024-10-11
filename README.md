@@ -444,4 +444,76 @@ This function:
 4. Attempts to create a database connection
 5. Handles various types of connection errors
 
+## ETL Automation (automated-etl-script.py)
+
+To ensure regular updates of the data warehouse, an automation script has been implemented. This script schedules and runs the ETL jobs on a daily basis.
+
+### Script Overview
+
+```python
+import os
+import schedule
+import time
+from DataPipeline import run_etl
+
+def run_all_etl_jobs():
+    print("Starting ETL jobs...")
+    
+    etl_jobs = [
+        ('dim-product-csv.csv', 'DIM_PRODUCT'),
+        ('dim-store-csv.csv', 'DIM_STORE'),
+        ('dim-date-csv.csv', 'DIM_DATE'),
+        ('dim-customer-csv.csv', 'DIM_CUSTOMER'),
+        ('fact-sales-csv.csv', 'FACT_SALES')
+    ]
+    
+    for csv_file, table_name in etl_jobs:
+        csv_path = os.path.join('data', csv_file)
+        if os.path.exists(csv_path):
+            print(f"Processing {csv_file}...")
+            run_etl(csv_path, table_name)
+        else:
+            print(f"Warning: {csv_file} not found in the data directory.")
+    
+    print("All ETL jobs completed.")
+
+# Schedule the job to run daily at 1:00 AM
+schedule.every().day.at("01:00").do(run_all_etl_jobs)
+
+if __name__ == "__main__":
+    print("ETL automation script started. Press Ctrl+C to exit.")
+    try:
+        while True:
+            schedule.run_pending()
+            time.sleep(60)  # Wait for 60 seconds before checking schedule again
+    except KeyboardInterrupt:
+        print("ETL automation script stopped.")
+```
+
+### Key Features
+
+1. **Job Definition**: The script defines a list of ETL jobs, each consisting of a CSV file name and its corresponding table name in the data warehouse.
+
+2. **File Checking**: Before running each ETL job, the script checks if the CSV file exists in the specified 'data' directory.
+
+3. **Scheduled Execution**: The ETL process is scheduled to run daily at 1:00 AM using the `schedule` library.
+
+4. **Continuous Operation**: The script runs continuously, checking every 60 seconds if there are any scheduled jobs to run.
+
+5. **Graceful Termination**: The script can be stopped safely using a keyboard interrupt (Ctrl+C).
+
+### Usage
+
+To use this automation script:
+
+1. Ensure all required CSV files are placed in a 'data' directory.
+2. Run the script using Python: `python automated-etl-script.py`
+3. The script will continue running until manually stopped.
+
+### Considerations
+
+- **Server Deployment**: For production use, consider deploying this script on a server that runs continuously.
+- **Error Handling**: Implement more robust error handling and logging for production environments.
+- **Monitoring**: Set up alerts to notify administrators of any failures in the ETL process.
+- **Data Freshness**: Adjust the schedule as needed based on how frequently your source data is updated.
 
