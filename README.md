@@ -326,6 +326,122 @@ CREATE INDEX idx_date ON FACT_SALES(date_id);
 CREATE INDEX idx_customer ON FACT_SALES(customer_id);
 ```
 
+## Data Pipeline (DataPipeline.py)
 
+The data pipeline script (`DataPipeline.py`) handles the Extract, Transform, and Load (ETL) process for our data warehouse. Here's an overview of its main components:
+
+### 1. Database Connection
+```python
+def create_connection():
+    connection_string = (
+        "mssql+pyodbc://ATRXLO/RetailInventoryDWHStar?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
+    )
+    engine = create_engine(connection_string)
+    return engine
+```
+This function establishes a connection to the SQL Server database using SQLAlchemy.
+
+### 2. Extract Function
+```python
+def extract(file_path):
+    try:
+        df = pd.read_csv(file_path)
+        print(f"Extracted {len(df)} records from {file_path}.")
+        return df
+    except Exception as e:
+        print(f"Error during extraction: {e}")
+        return pd.DataFrame()
+```
+This function reads data from a CSV file and returns it as a pandas DataFrame.
+
+### 3. Transform Function
+```python
+def transform(df):
+    # Handle missing values
+    if df.isnull().values.any():
+        print("Data contains missing values. Filling with default values or dropping rows.")
+        df.fillna({
+            'product_id': 0,
+            'product_name': 'Unknown',
+            # ... [other columns] ...
+        }, inplace=True)
+
+    # Validate product_id (must be unique)
+    if 'product_id' in df.columns and not df['product_id'].is_unique:
+        print("Warning: Duplicate product_ids found.")
+        df.drop_duplicates(subset=['product_id'], inplace=True)
+
+    # Validate unit_price
+    if 'unit_price' in df.columns:
+        df = df[df['unit_price'] >= 0]  # Drop negative prices
+
+    print(f"Transformed data contains {len(df)} records after validation.")
+    return df
+```
+This function cleans and validates the data, handling missing values, duplicate product IDs, and negative prices.
+
+### 4. Load Function
+```python
+def load(df, table_name):
+    engine = create_connection()
+    try:
+        df.to_sql(table_name, con=engine, if_exists='append', index=False)
+        print(f"Loaded {len(df)} records into {table_name}.")
+    except Exception as e:
+        print(f"Error during loading to {table_name}: {e}")
+```
+This function loads the transformed data into the specified SQL Server table.
+
+### 5. Main ETL Function
+```python
+def run_etl(csv_file_path, table_name):
+    extracted_data = extract(csv_file_path)
+    if not extracted_data.empty:
+        transformed_data = transform(extracted_data)
+        load(transformed_data, table_name)
+```
+This function orchestrates the entire ETL process for a given CSV file and table.
+
+## Database Configuration (config.py)
+
+The `config.py` file handles the database connection configuration:
+
+```python
+def get_connection():
+    try:
+        drivers = [driver for driver in pyodbc.drivers()]
+        print("Available ODBC drivers:", drivers)
+
+        driver = next((driver for driver in drivers if 'SQL Server' in driver), None)
+        if not driver:
+            raise ValueError("No SQL Server ODBC driver found")
+
+        connection_string = (
+            f"mssql+pyodbc://ATRXLO/RetailInventoryDWHStar"
+            f"?driver={driver.replace(' ', '+')}"
+            "&trusted_connection=yes"
+        )
+
+        print(f"Attempting to connect with: {connection_string}")
+
+        engine = create_engine(connection_string)
+        return engine.connect()
+    except SQLAlchemyError as e:
+        print(f"SQLAlchemy error occurred: {e}")
+        return None
+    except pyodbc.Error as e:
+        print(f"PYODBC error occurred: {e}")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return None
+```
+
+This function:
+1. Lists available ODBC drivers
+2. Selects an appropriate SQL Server driver
+3. Constructs a connection string
+4. Attempts to create a database connection
+5. Handles various types of connection errors
 
 
