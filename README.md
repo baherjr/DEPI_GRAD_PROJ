@@ -242,84 +242,95 @@ This week focuses on implementing a data warehouse to consolidate inventory and 
   - SQLAlchemy (for database connectivity)
   - Any additional libraries used in the project
 
-## Data Warehouse Schema (Star Schema)
+## Car Retail Data Warehouse Schema (Star Schema)
+
+
 
 ### Dimension Tables
 
-1. **DIM_PRODUCT**
+1. **DimVehicle**
    ```sql
-   CREATE TABLE DIM_PRODUCT (
-       product_id INT PRIMARY KEY,
-       product_name VARCHAR(100),
-       category VARCHAR(50),
-       unit_price DECIMAL(10, 2),
-       supplier_id INT
+   CREATE TABLE DimVehicle (
+       VehicleKey INT PRIMARY KEY,
+       VehicleID VARCHAR(100) NOT NULL,
+       Make VARCHAR(50) NOT NULL,
+       Model VARCHAR(50) NOT NULL,
+       Year INT NOT NULL,
+       FuelType VARCHAR(50) NOT NULL,
+       Transmission VARCHAR(50) NOT NULL,
+       Engine VARCHAR(50) NOT NULL,
+       NumberOfDoors INT NOT NULL,
+       Drivetrain VARCHAR(50) NOT NULL,
+       MaxPower INT NOT NULL,
+       Price DECIMAL(10, 2) NOT NULL
    );
    ```
 
-2. **DIM_STORE**
+2. **DimDealership**
    ```sql
-   CREATE TABLE DIM_STORE (
-       store_id INT PRIMARY KEY,
-       store_name VARCHAR(100),
-       city VARCHAR(50),
-       state VARCHAR(50),
-       country VARCHAR(50)
+   CREATE TABLE DimDealership (
+       DealershipKey INT PRIMARY KEY,
+       DealershipID VARCHAR(20) NOT NULL,
+       Location VARCHAR(100) NOT NULL,
+       OwnerType VARCHAR(50) NOT NULL,
+       SellerType VARCHAR(50) NOT NULL
    );
    ```
 
-3. **DIM_DATE**
+3. **DimDate**
    ```sql
-   CREATE TABLE DIM_DATE (
-       date_id INT PRIMARY KEY,
-       full_date DATE,
-       year INT,
-       quarter INT,
-       month INT,
-       day INT,
-       day_of_week VARCHAR(10)
+   CREATE TABLE DimDate (
+       DateKey INT PRIMARY KEY,
+       Date DATE NOT NULL,
+       Year INT NOT NULL,
+       Month INT NOT NULL,
+       MonthName VARCHAR(10) NOT NULL,
+       Quarter INT NOT NULL
    );
    ```
 
-4. **DIM_CUSTOMER**
+### Fact Tables
+
+1. **FactSales**
    ```sql
-   CREATE TABLE DIM_CUSTOMER (
-       customer_id INT PRIMARY KEY,
-       customer_name VARCHAR(100),
-       email VARCHAR(100),
-       city VARCHAR(50),
-       state VARCHAR(50),
-       country VARCHAR(50)
+   CREATE TABLE FactSales (
+       SaleID INT PRIMARY KEY,
+       DateKey INT NOT NULL,
+       VehicleKey INT NOT NULL,
+       DealershipKey INT NOT NULL,
+       QuantitySold INT NOT NULL,
+       TotalAmount DECIMAL(12, 2) NOT NULL,
+       FOREIGN KEY (DateKey) REFERENCES DimDate(DateKey),
+       FOREIGN KEY (VehicleKey) REFERENCES DimVehicle(VehicleKey),
+       FOREIGN KEY (DealershipKey) REFERENCES DimDealership(DealershipKey)
    );
    ```
 
-### Fact Table
-
-**FACT_SALES**
-```sql
-CREATE TABLE FACT_SALES (
-    sale_id INT PRIMARY KEY,
-    product_id INT,
-    store_id INT,
-    date_id INT,
-    customer_id INT,
-    quantity INT,
-    total_amount DECIMAL(10, 2),
-    FOREIGN KEY (product_id) REFERENCES DIM_PRODUCT(product_id),
-    FOREIGN KEY (store_id) REFERENCES DIM_STORE(store_id),
-    FOREIGN KEY (date_id) REFERENCES DIM_DATE(date_id),
-    FOREIGN KEY (customer_id) REFERENCES DIM_CUSTOMER(customer_id)
-);
-```
+2. **FactInventory**
+   ```sql
+   CREATE TABLE FactInventory (
+       InventoryID INT PRIMARY KEY,
+       DateKey INT NOT NULL,
+       VehicleKey INT NOT NULL,
+       StockLevel INT NOT NULL,
+       FOREIGN KEY (DateKey) REFERENCES DimDate(DateKey),
+       FOREIGN KEY (VehicleKey) REFERENCES DimVehicle(VehicleKey)
+   );
+   ```
 
 ### Indexes
+
 To improve query performance, the following indexes have been created:
 
 ```sql
-CREATE INDEX idx_product ON FACT_SALES(product_id);
-CREATE INDEX idx_store ON FACT_SALES(store_id);
-CREATE INDEX idx_date ON FACT_SALES(date_id);
-CREATE INDEX idx_customer ON FACT_SALES(customer_id);
+CREATE INDEX idx_dimvehicle_vehicleid ON DimVehicle(VehicleID);
+CREATE INDEX idx_dimdealership_dealershipid ON DimDealership(DealershipID);
+CREATE INDEX idx_dimdate_date ON DimDate(Date);
+CREATE INDEX idx_factsales_datekey ON FactSales(DateKey);
+CREATE INDEX idx_factsales_vehiclekey ON FactSales(VehicleKey);
+CREATE INDEX idx_factsales_dealershipkey ON FactSales(DealershipKey);
+CREATE INDEX idx_factinventory_datekey ON FactInventory(DateKey);
+CREATE INDEX idx_factinventory_vehiclekey ON FactInventory(VehicleKey);
 ```
 
 ## Data Pipeline (DataPipeline.py)
