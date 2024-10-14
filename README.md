@@ -2,194 +2,190 @@
 
 # Week 1
 # Retail Inventory Management Database Documentation
+
 ## Database Schema
+
 **The Retail Inventory Management database consists of the following tables:**
 
-#### *Suppliers*
-- supplier_id: Unique identifier for the supplier
-- supplier_name: Name of the supplier
-- contact_info: Contact information for the supplier
+### Vehicles
+- **vehicle_id**: Unique identifier for each vehicle
+- **make**: Manufacturer of the vehicle
+- **model**: Model name of the vehicle
+- **year**: Manufacturing year of the vehicle
+- **fuel_type**: Type of fuel used (e.g., Petrol, Diesel, Electric)
+- **transmission**: Transmission type (e.g., Automatic, Manual)
+- **engine**: Engine type or configuration
+- **color**: Color of the vehicle
+- **seating_capacity**: Number of passengers the vehicle can accommodate
+- **drivetrain**: Drivetrain configuration (e.g., FWD, RWD, AWD)
+- **max_power**: Maximum power output of the vehicle
+- **max_torque**: Maximum torque of the vehicle
+- **price**: Retail price of the vehicle
+- **stock_level**: Current stock level of the vehicle
+- **fuel_efficiency**: Fuel efficiency measured in miles per gallon (MPG) or equivalent
 
 ```sql
-CREATE TABLE [dbo].[Suppliers] (
-    [supplier_id] INT PRIMARY KEY,
-    [supplier_name] VARCHAR(255) NOT NULL,
-    [contact_info] VARCHAR(255) NOT NULL
-) ON [PRIMARY];
+CREATE TABLE Vehicles (
+    vehicle_id INT PRIMARY KEY,
+    make VARCHAR(50),
+    model VARCHAR(100),
+    year INT,
+    fuel_type VARCHAR(50),
+    transmission VARCHAR(50),
+    engine VARCHAR(50),
+    color VARCHAR(50),
+    seating_capacity INT,
+    drivetrain VARCHAR(50),
+    max_power VARCHAR(50),
+    max_torque VARCHAR(50),
+    price DECIMAL(10, 2),
+    stock_level INT,
+    fuel_efficiency DECIMAL(5, 2)
+);
 ```
 
-#### *Products*
-
-- product_id: Unique identifier for the product
-- product_name: Name of the product
-- category: Category the product belongs to
-- supplier_id: Foreign key reference to the Suppliers table
-- price: Price of the product
+### Dealerships
+- **dealership_id**: Unique identifier for each dealership
+- **location**: Physical location of the dealership
+- **owner_type**: Type of ownership (e.g., Company Owned, Franchise)
+- **seller_type**: Type of seller (e.g., Dealer, Private)
 
 ```sql
-CREATE TABLE [dbo].[Products] (
-    [product_id] INT PRIMARY KEY,
-    [product_name] VARCHAR(255) NOT NULL,
-    [category] VARCHAR(100),
-    [supplier_id] INT,
-    [price] DECIMAL(10, 2),
-    FOREIGN KEY (supplier_id) REFERENCES dbo.Suppliers(supplier_id)
-) ON [PRIMARY];
+CREATE TABLE Dealerships (
+    dealership_id INT PRIMARY KEY,
+    location VARCHAR(100),
+    owner_type VARCHAR(50),
+    seller_type VARCHAR(50)
+);
 ```
 
-#### *Inventory*
-
-- inventory_id: Unique identifier for the inventory record
-- product_id: Foreign key reference to the Products table
-- warehouse_location: Location of the product in the warehouse
-- quantity_in_stock: Current quantity of the product in stock
+### Sales
+- **sale_id**: Unique identifier for each sale record
+- **vehicle_id**: Foreign key reference to the Vehicles table
+- **dealership_id**: Foreign key reference to the Dealerships table
+- **sale_date**: Date when the sale occurred
+- **quantity_sold**: Quantity of vehicles sold
+- **total_amount**: Total sale amount for the transaction
 
 ```sql
-CREATE TABLE [dbo].[Inventory] (
-    [inventory_id] INT PRIMARY KEY,
-    [product_id] INT,
-    [warehouse_location] VARCHAR(255),
-    [quantity_in_stock] INT,
-    FOREIGN KEY (product_id) REFERENCES dbo.Products(product_id)
-) ON [PRIMARY];
+CREATE TABLE Sales (
+    sale_id INT PRIMARY KEY,
+    vehicle_id INT,
+    dealership_id INT,
+    sale_date DATE,
+    quantity_sold INT,
+    total_amount DECIMAL(10, 2),
+    FOREIGN KEY (vehicle_id) REFERENCES Vehicles(vehicle_id),
+    FOREIGN KEY (dealership_id) REFERENCES Dealerships(dealership_id)
+);
 ```
-#### *Sales*
 
-- sale_id: Unique identifier for the sale record
-- product_id: Foreign key reference to the Products table
-- quantity_sold: Quantity of the product sold
-- sale_date: Date of the sale
-- sale_price: Price at which the product was sold
+### Inventory
+- **vehicle_id**: Foreign key reference to the Vehicles table
+- **stock_level**: Current stock level of the vehicle
+- **last_updated**: Date when the stock level was last updated
 
 ```sql
-CREATE TABLE [dbo].[Sales] (
-    [sale_id] INT PRIMARY KEY,
-    [product_id] INT,
-    [quantity_sold] INT,
-    [sale_date] DATE,
-    [sale_price] DECIMAL(10, 2),
-    FOREIGN KEY (product_id) REFERENCES dbo.Products(product_id)
-) ON [PRIMARY];
+CREATE TABLE Inventory (
+    vehicle_id INT,
+    stock_level INT,
+    last_updated DATE,
+    FOREIGN KEY (vehicle_id) REFERENCES Vehicles(vehicle_id)
+);
 ```
-</br>
 
-The database schema establishes relationships between the tables using foreign key constraints. For example, the Products table is linked to the Suppliers table through the supplier_id column, and the Inventory and Sales tables are linked to the Products table through the product_id column.
-</br>
+The database schema establishes relationships between the tables using foreign key constraints. For example, the **Sales** table is linked to the **Vehicles** table through the `vehicle_id` column, and the **Inventory** table is linked to the **Vehicles** table via the same column.
 
 ## SQL Queries
+
 **The SQL script provided includes the following queries:**
 
-*1. Products Running Low on Stock:*
-- This query selects the product name, warehouse location, and quantity in stock for products where the quantity in stock is less than 10.
+1. **Low Inventory Warning**: This query selects the vehicle make, model, and stock level for vehicles where the stock level is less than 5.
 
 ```sql
-SELECT p.product_name, i.warehouse_location, i.quantity_in_stock
-FROM Products p
-JOIN Inventory i ON p.product_id = i.product_id
-WHERE i.quantity_in_stock < 10;
-```
-
-*2. Total Sales Revenue for Each Product:*
-- This query calculates the total sales revenue for each product by multiplying the quantity sold and the sale price, then grouping the results by the product name.
-
-```sql
-SELECT p.product_name, SUM(s.quantity_sold * s.sale_price) AS total_sales_revenue
-FROM Products p
-JOIN Sales s ON p.product_id = s.product_id
-GROUP BY p.product_name
-ORDER BY total_sales_revenue DESC;
-```
-
-*3. Daily Sales Summary:*
-- This query calculates the total daily sales by summing the sale price multiplied by the quantity sold, grouped by the sale date.
-
-```sql
-SELECT s.sale_date, SUM(s.sale_price * s.quantity_sold) AS daily_sales
-FROM Sales s
-GROUP BY s.sale_date
-ORDER BY s.sale_date;
-```
-
-*4. Supplier-wise Product Distribution:*
-- This query counts the number of products for each supplier by joining the Suppliers and Products tables and grouping the results by the supplier name.
-
-```sql
-SELECT su.supplier_name, COUNT(p.product_id) AS number_of_products
-FROM Suppliers su
-JOIN Products p ON su.supplier_id = p.supplier_id
-GROUP BY su.supplier_name;
-```
-
-*5. Products with Highest Sales Volume:*
-- This query finds the products with the highest total quantity sold by joining the Products and Sales tables and grouping the results by the product name.
-
-```sql
-SELECT p.product_name, SUM(s.quantity_sold) AS total_quantity_sold
-FROM Products p
-JOIN Sales s ON p.product_id = s.product_id
-GROUP BY p.product_name
-ORDER BY total_quantity_sold DESC;
-```
-
-*6. Sales by Warehouse Location:*
-- This query calculates the total sales for each warehouse location by joining the Inventory and Sales tables and grouping the results by the warehouse location.
-
-```sql
-SELECT i.warehouse_location, SUM(s.quantity_sold * s.sale_price) AS warehouse_sales
+SELECT v.make, v.model, i.stock_level
 FROM Inventory i
-JOIN Sales s ON i.product_id = s.product_id
-GROUP BY i.warehouse_location
-ORDER BY warehouse_sales DESC;
+JOIN Vehicles v ON i.vehicle_id = v.vehicle_id
+WHERE i.stock_level < 5;
 ```
 
-*7. Average Sales Price for Each Product:*
-- This query calculates the average sales price for each product by joining the Products and Sales tables and grouping the results by the product name.
+2. **Total Sales by Dealership**: This query calculates the total sales for each dealership by summing the total amount of sales.
 
 ```sql
-SELECT p.product_name, AVG(s.sale_price) AS avg_sale_price
-FROM Products p
-JOIN Sales s ON p.product_id = s.product_id
-GROUP BY p.product_name
-ORDER BY avg_sale_price DESC;
+SELECT d.location, SUM(s.total_amount) AS total_sales
+FROM Sales s
+JOIN Dealerships d ON s.dealership_id = d.dealership_id
+GROUP BY d.location;
 ```
 
-*8. Inventory Status by Supplier:*
-- This query calculates the total stock for each supplier by joining the Suppliers, Products, and Inventory tables and grouping the results by the supplier name.
+3. **Best-Selling Vehicle**: This query finds the best-selling vehicle by summing the quantity sold and ordering the results.
 
 ```sql
-SELECT su.supplier_name, SUM(i.quantity_in_stock) AS total_stock
-FROM Suppliers su
-JOIN Products p ON su.supplier_id = p.supplier_id
-JOIN Inventory i ON p.product_id = i.product_id
-GROUP BY su.supplier_name
-ORDER BY total_stock DESC;
+SELECT v.make, v.model, SUM(s.quantity_sold) AS total_sold
+FROM Sales s
+JOIN Vehicles v ON s.vehicle_id = v.vehicle_id
+GROUP BY v.make, v.model
+ORDER BY total_sold DESC
+LIMIT 1;
 ```
 
-*9. Products Never Sold:*
-- This query finds the products that have never been sold by performing a left join between the Products and Sales tables and selecting products where the sale ID is null.
+4. **Sales by Month**: This query summarizes total sales by month.
 
 ```sql
-SELECT p.product_name
-FROM Products p
-LEFT JOIN Sales s ON p.product_id = s.product_id
-WHERE s.sale_id IS NULL;
+SELECT MONTH(s.sale_date) AS sale_month, SUM(s.total_amount) AS total_sales
+FROM Sales s
+GROUP BY MONTH(s.sale_date);
 ```
 
-*10. Most Popular Categories by Sales Revenue:*
-- This query calculates the total sales revenue for each product category by joining the Products and Sales tables and grouping the results by the product category.
+5. **Average Sale Price by Vehicle Model**: This query calculates the average sale price for each vehicle model.
 
 ```sql
-SELECT p.category, SUM(s.quantity_sold * s.sale_price) AS total_category_sales
-FROM Products p
-JOIN Sales s ON p.product_id = s.product_id
-GROUP BY p.category
-ORDER BY total_category_sales DESC;
+SELECT v.make, v.model, AVG(s.total_amount) AS avg_sale_price
+FROM Sales s
+JOIN Vehicles v ON s.vehicle_id = v.vehicle_id
+GROUP BY v.make, v.model;
 ```
-</br>
 
+6. **Vehicles Sold by Each Dealership**: This query calculates the total quantity sold for each vehicle by dealership.
 
-These queries provide a range of insights into the retail inventory management system, including inventory levels, sales performance, supplier relationships, and product popularity.
-</br>
+```sql
+SELECT d.location, v.make, v.model, SUM(s.quantity_sold) AS total_sold
+FROM Sales s
+JOIN Dealerships d ON s.dealership_id = d.dealership_id
+JOIN Vehicles v ON s.vehicle_id = v.vehicle_id
+GROUP BY d.location, v.make, v.model
+ORDER BY d.location, total_sold DESC;
+```
+
+7. **Inventory and Sales Performance Analysis**: This query summarizes inventory and sales performance across all vehicles and dealerships.
+
+```sql
+WITH InventorySummary AS (
+    SELECT v.vehicle_id, v.make, v.model, d.location, i.stock_level, v.fuel_efficiency
+    FROM Vehicles v
+    JOIN Inventory i ON v.vehicle_id = i.vehicle_id
+    JOIN Dealerships d ON i.vehicle_id = d.dealership_id
+),
+SalesSummary AS (
+    SELECT s.vehicle_id, SUM(s.quantity_sold) AS total_units_sold, SUM(s.total_amount) AS total_sales_amount
+    FROM Sales s
+    GROUP BY s.vehicle_id
+)
+SELECT
+    isum.make,
+    isum.model,
+    isum.location,
+    isum.stock_level,
+    COALESCE(ss.total_units_sold, 0) AS total_units_sold,
+    COALESCE(ss.total_sales_amount, 0) AS total_sales_amount,
+    isum.fuel_efficiency
+FROM InventorySummary isum
+LEFT JOIN SalesSummary ss ON isum.vehicle_id = ss.vehicle_id
+ORDER BY isum.location, isum.make, isum.model;
+```
+
+These queries provide a range of insights into the retail inventory management system, including inventory levels, sales performance, dealership statistics, and vehicle popularity.
+
 
 # Week 2: Data Warehousing and Python Integration
 
