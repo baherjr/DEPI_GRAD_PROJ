@@ -1,6 +1,7 @@
 import os
 from urllib.parse import quote_plus
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text, exc  # Updated import for text() and exc
+import sqlalchemy as sa  # Import sqlalchemy as sa
 from sqlalchemy.exc import SQLAlchemyError
 import pyodbc
 import psycopg2
@@ -38,18 +39,49 @@ def get_mssql_connection():
 
         connection_string = (
             f"mssql+pyodbc://{DB_CONFIG['mssql']['server']}/"
-            f"{DB_CONFIG['mssql']['database']}"
-            f"?driver={DB_CONFIG['mssql']['driver'].replace(' ', '+')}"
+            f"{DB_CONFIG['mssql']['database']}?driver={DB_CONFIG['mssql']['driver'].replace(' ', '+')}"
             "&trusted_connection=yes"
         )
 
         print(f"Attempting to connect to MSSQL with: {connection_string}")
 
         engine = create_engine(connection_string)
-        return engine.connect()
+        connection = engine.connect()
+
+        # Metadata query to check for DimVehicle table
+        metadata_query = """
+        SELECT [INFORMATION_SCHEMA].[TABLES].[TABLE_NAME] 
+        FROM [INFORMATION_SCHEMA].[TABLES] 
+        WHERE 
+            ([INFORMATION_SCHEMA].[TABLES].[TABLE_TYPE] = CAST(:table_type1 AS NVARCHAR(255)) 
+            OR [INFORMATION_SCHEMA].[TABLES].[TABLE_TYPE] = CAST(:table_type2 AS NVARCHAR(255)))
+            AND [INFORMATION_SCHEMA].[TABLES].[TABLE_NAME] = CAST(:table_name AS NVARCHAR(255)) 
+            AND [INFORMATION_SCHEMA].[TABLES].[TABLE_SCHEMA] = CAST(:table_schema AS NVARCHAR(255));
+        """
+
+        params = {
+            'table_type1': 'BASE TABLE',
+            'table_type2': 'VIEW',
+            'table_name': 'DimVehicle',  # Check if this table exists
+            'table_schema': 'dbo'
+        }
+
+        # Execute the metadata query
+        result = connection.execute(sa.text(metadata_query), params)
+        tables = result.fetchall()
+
+        if tables:
+            # Accessing the first column (TABLE_NAME) using index 0
+            print(f"Table DimVehicle exists: {tables[0][0]}")
+        else:
+            print("Table DimVehicle does not exist")
+
+        return connection
+
     except (SQLAlchemyError, pyodbc.Error) as e:
         print(f"Error connecting to MSSQL: {e}")
         return None
+
 
 
 def get_postgresql_connection():
