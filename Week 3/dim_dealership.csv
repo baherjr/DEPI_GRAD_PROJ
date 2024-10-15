@@ -1,0 +1,16 @@
+DealershipKey,DealershipID,Location,OwnerType,SellerType
+1,D001,"New York, NY",Franchise,New Cars
+2,D002,"Los Angeles, CA",Independent,Used Cars
+3,D003,"Chicago, IL",Franchise,New and Used Cars
+4,D004,"Houston, TX",Franchise,New Cars
+5,D005,"Phoenix, AZ",Independent,Used Cars
+6,D006,"Philadelphia, PA",Franchise,New and Used Cars
+7,D007,"San Antonio, TX",Independent,Used Cars
+8,D008,"San Diego, CA",Franchise,New Cars
+9,D009,"Dallas, TX",Franchise,New and Used Cars
+10,D010,"San Jose, CA",Independent,Used Cars
+11,D011,"Austin, TX",Franchise,New Cars
+12,D012,"Jacksonville, FL",Independent,Used Cars
+13,D013,"San Francisco, CA",Franchise,New and Used Cars
+14,D014,"Columbus, OH",Independent,Used Cars
+15,D015,"Fort Worth, TX",Franchise,New Cars
