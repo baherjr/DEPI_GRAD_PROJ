@@ -342,13 +342,38 @@ To improve query performance, the following indexes have been created:
 
 ## Data Pipeline (DataPipeline.py)
 
-The `DataPipeline.py` script implements an Extract, Transform, and Load (ETL) process for our data warehouse. Here's a detailed overview of its main components:
+The `DataPipeline.py` script implements an Extract, Transform, and Load (ETL) process for a vehicle sales data warehouse. Here's a detailed overview of its main components:
 
-### 1. Database Connection
+### 1. Imports and Configuration
+
+```python
+import pandas as pd
+import pyodbc
+import os
+import logging
+from sqlalchemy import create_engine, Table, MetaData, insert
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DB_CONFIG = {
+    'mssql': {
+        'server': os.getenv('MSSQL_SERVER'),
+        'database': os.getenv('MSSQL_DATABASE'),
+    },
+}
+
+logging.basicConfig(level=logging.INFO)
+```
+
+This section imports necessary libraries, loads environment variables, and sets up logging and database configuration.
+
+### 2. Database Connection
+
 ```python
 def create_connection():
     connection_string = (
-        "mssql+pyodbc://ATRXLO/RetailInventoryDWHStar?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
+        f"mssql+pyodbc://{DB_CONFIG['mssql']['server']}/{DB_CONFIG['mssql']['database']}?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
     )
     try:
         engine = create_engine(connection_string)
@@ -359,109 +384,145 @@ def create_connection():
         logging.error(f"Connection failed: {e}")
         return None
 ```
-This function establishes a connection to the SQL Server database using SQLAlchemy. It now returns a connection object and includes error handling with logging.
 
-### 2. Extract Function
+This function establishes a connection to the SQL Server database using SQLAlchemy. It returns a connection object and includes error handling with logging.
+
+### 3. Extract Function
+
 ```python
 def extract(file_path):
     try:
         df = pd.read_csv(file_path)
-        logging.info(f"Extracted {len(df)} records from {file_path}.")
+        logging.info(f"Extracted {len(df)} rows from {file_path}.")
         return df
     except FileNotFoundError:
-        logging.error(f"File not found: {file_path}")
+        logging.error(f"File not found: {file_path}. Please check the path.")
+        return pd.DataFrame()
+    except pd.errors.EmptyDataError:
+        logging.error(f"No data: The file at {file_path} is empty.")
+        return pd.DataFrame()
+    except pd.errors.ParserError:
+        logging.error(f"Parsing error: Could not parse the file at {file_path}.")
         return pd.DataFrame()
     except Exception as e:
-        logging.error(f"Error during extraction: {e}")
+        logging.error(f"Error extracting data from {file_path}: {e}")
         return pd.DataFrame()
 ```
-This function reads data from a CSV file and returns it as a pandas DataFrame. It now includes specific error handling for FileNotFoundError and improved logging.
 
-### 3. Transform Function
+This function reads data from a CSV file and returns it as a pandas DataFrame. It includes specific error handling for various scenarios and improved logging.
+
+### 4. Transform Functions
+
+The script includes several transform functions for different tables:
+
 ```python
-def transform(df, table_name):
-    # General cleaning: Handle missing values in all datasets
-    df.fillna({
-        'store_id': 0,
-        'store_name': 'Unknown',
-        'city': 'Unknown',
-        # ... (other columns)
-    }, inplace=True)
+def transform_dim_vehicle(df):
+    # Transformation logic for DimVehicle table
+    # ...
 
-    # Handle table-specific transformations
-    if table_name == 'DIM_PRODUCT':
-        # Product-specific transformations
-    elif table_name == 'DIM_STORE':
-        # Store-specific transformations
-
-    # Generic data validation
-    if 'unit_price' in df.columns:
-        df = df[df['unit_price'] >= 0]
-    if 'quantity' in df.columns:
-        df = df[df['quantity'] >= 0]
-
+def transform_dim_dealership(df):
+    # No transformations for DimDealership table
     return df
-```
-This function cleans and validates the data, handling missing values, applying table-specific transformations, and performing generic data validation. It now includes more comprehensive missing value handling and table-specific logic.
 
-### 4. Load Function
+def transform_dim_date(df):
+    # Transformation logic for DimDate table
+    # ...
+
+def transform_fact_sales(df):
+    # Transformation logic for FactSales table
+    # ...
+
+def transform_fact_inventory(df):
+    # Transformation logic for FactInventory table
+    # ...
+```
+
+These functions clean and validate the data, handling missing values, applying table-specific transformations, and performing data type conversions.
+
+
+### 5. Load Function
+
 ```python
-def load(df, table_name):
-    conn = create_connection()
-    if conn is None:
-        logging.error("No connection available to load data.")
+def load(df, table_name, conn):
+    if df.empty:
+        logging.warning(f"No data to load for {table_name}.")
+        return
+
+    # Log columns present in the DataFrame
+    logging.info(f"Columns in {table_name}: {df.columns.tolist()}")
+
+    required_columns = {
+        'DimVehicle': ['VehicleKey', 'VehicleID', 'Make', 'Model', 'Year', 'FuelType', 'Transmission',
+                       'Engine', 'NumberOfDoors', 'Drivetrain', 'MaxPower', 'Price'],
+        'DimDealership': ['DealershipKey', 'DealershipID', 'Location', 'OwnerType', 'SellerType'],
+        'DimDate': ['DateKey', 'Date', 'Year', 'MonthName', 'Quarter'],
+        'FactSales': ['SaleID', 'DateKey', 'VehicleKey', 'DealershipKey', 'QuantitySold', 'TotalAmount'],
+        'FactInventory': ['InventoryID', 'DateKey', 'VehicleKey', 'StockLevel']
+    }
+
+    # Check for missing columns
+    missing_columns = [col for col in required_columns[table_name] if col not in df.columns]
+    if missing_columns:
+        logging.error(f"Missing columns in {table_name}: {missing_columns}")
         return
 
     try:
-        df.to_sql(table_name, con=conn, if_exists='append', index=False)
-        logging.info(f"Loaded {len(df)} records into {table_name}.")
+        # Additional checks for FactSales and FactInventory
+        # ...
+
+        # Use the to_sql method for inserting data
+        df.to_sql(table_name, conn, if_exists='append', index=False)
+        logging.info(f"Loaded {len(df)} rows into {table_name}.")
+        conn.commit()
+
     except Exception as e:
-        logging.error(f"Error during loading to {table_name}: {e}")
-    finally:
-        conn.close()
+        logging.error(f"Error loading data into {table_name}: {e}")
 ```
-This function loads the transformed data into the specified SQL Server table. It now includes proper connection management and error handling.
 
-## 5. Verify Load Function
-```python
-def verify_load(table_name):
-    conn = create_connection()
-    if conn is None:
-        logging.error("No connection available to verify load.")
-        return
-
-    query = f"SELECT COUNT(*) FROM {table_name}"
-    count = pd.read_sql(query, conn)
-    print(f"{table_name} record count: {count.iloc[0, 0]}")
-    conn.close()
-```
-This new function verifies the number of records in each table after the load process, providing a simple data quality check.
+This function loads the transformed data into the specified SQL Server table. It includes checks for required columns, foreign key constraints, and proper error handling.
 
 ### 6. Main ETL Function
+
 ```python
-def run_etl(csv_file, table_name):
-    extracted_data = extract(csv_file)
-    logging.info(f"Extracted {len(extracted_data)} records from {csv_file}")
+def run_etl(conn):
+    try:
+        # Extract data from CSV files
+        dim_vehicle_df = extract('dim_vehicle.csv')
+        dim_dealership_df = extract('dim_dealership.csv')
+        dim_date_df = extract('dim_date.csv')
+        fact_sales_df = extract('fact_sales.csv')
+        fact_inventory_df = extract('fact_inventory.csv')
 
-    transformed_data = transform(extracted_data, table_name)
+        # Log DataFrame columns
+        # ...
 
-    load(transformed_data, table_name)
+        # Load data into SQL tables
+        load(dim_vehicle_df, 'DimVehicle', conn)
+        load(dim_dealership_df, 'DimDealership', conn)
+        load(dim_date_df, 'DimDate', conn)
+        load(fact_sales_df, 'FactSales', conn)
+        load(fact_inventory_df, 'FactInventory', conn)
 
-    verify_load(table_name)
+    except Exception as e:
+        logging.error(f"ETL process failed: {e}")
+    finally:
+        if conn:
+            conn.close()
+            logging.info("Database connection closed.")
 ```
-This function orchestrates the entire ETL process for a given CSV file and table, including the new verification step.
+
+This function orchestrates the entire ETL process for all tables, including extraction, transformation, and loading steps.
 
 ### Main Execution
-The script ends with a main execution block that runs the ETL process for multiple tables:
+
+The script ends with a main execution block that runs the ETL process:
+
 ```python
 if __name__ == "__main__":
-    run_etl('dim-product-csv.csv', 'DIM_PRODUCT')
-    run_etl('dim-store-csv.csv', 'DIM_STORE')
-    run_etl('dim-date-csv.csv', 'DIM_DATE')
-    run_etl('dim-customer-csv.csv', 'DIM_CUSTOMER')
-    run_etl('fact-sales-csv.csv', 'FACT_SALES')
+    run_etl(create_connection())
 ```
 
-This structure allows for easy processing of multiple tables in sequence.
+This structure allows for the processing of multiple tables in sequence, with proper error handling and logging throughout the ETL pipeline.
+
 
 
