@@ -71,3 +71,43 @@ BEGIN
 		PRIMARY KEY (InventoryID, DateKey)
     );
 END
+
+
+-- Create indexes for DimVehicle Table
+IF OBJECT_ID(N'dbo.DimVehicleIndex', N'U') IS NULL
+BEGIN
+    CREATE INDEX IX_DimVehicle_VehicleID ON DimVehicle (VehicleID);
+    CREATE INDEX IX_DimVehicle_Make ON DimVehicle (Make);
+    CREATE INDEX IX_DimVehicle_Model ON DimVehicle (Model);
+    CREATE INDEX IX_DimVehicle_Year ON DimVehicle (Year);
+END
+
+-- Create indexes for DimDealership Table
+IF OBJECT_ID(N'dbo.DimDealershipIndex', N'U') IS NULL
+BEGIN
+    CREATE INDEX IX_DimDealership_DealershipID ON DimDealership (DealershipID);
+    CREATE INDEX IX_DimDealership_Location ON DimDealership (Location);
+END
+
+-- Create indexes for DimDate Table
+IF OBJECT_ID(N'dbo.DimDateIndex', N'U') IS NULL
+BEGIN
+    CREATE INDEX IX_DimDate_Year ON DimDate (Year);
+    CREATE INDEX IX_DimDate_Month ON DimDate (Month);
+    CREATE INDEX IX_DimDate_Quarter ON DimDate (Quarter);
+END
+
+-- Create indexes for FactSales Table
+IF OBJECT_ID(N'dbo.FactSalesIndex', N'U') IS NULL
+BEGIN
+    CREATE INDEX IX_FactSales_DateKey ON FactSales (DateKey);
+    CREATE INDEX IX_FactSales_VehicleKey ON FactSales (VehicleKey);
+    CREATE INDEX IX_FactSales_DealershipKey ON FactSales (DealershipKey);
+END
+
+-- Create indexes for FactInventory Table
+IF OBJECT_ID(N'dbo.FactInventoryIndex', N'U') IS NULL
+BEGIN
+    CREATE INDEX IX_FactInventory_DateKey ON FactInventory (DateKey);
+    CREATE INDEX IX_FactInventory_VehicleKey ON FactInventory (VehicleKey);
+END
