@@ -4,6 +4,7 @@ import os
 import logging
 from sqlalchemy import create_engine, Table, MetaData, insert
 from dotenv import load_dotenv
+from sqlalchemy import text
 
 load_dotenv()
 
@@ -13,7 +14,6 @@ DB_CONFIG = {
         'database': os.getenv('MSSQL_DATABASE'),
     },
 }
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -32,9 +32,6 @@ def create_connection():
     except Exception as e:
         logging.error(f"Connection failed: {e}")
         return None
-
-
-from sqlalchemy import text
 
 
 def extract(file_path):
@@ -121,7 +118,6 @@ def transform_dim_dealership(df):
     return df
 
 
-
 def transform_dim_date(df):
     """
     Transform the DimDate DataFrame.
@@ -200,6 +196,7 @@ def transform_fact_sales(df):
 
     return df
 
+
 def transform_fact_inventory(df):
     """
     Transform the FactInventory DataFrame.
@@ -232,21 +229,6 @@ def transform_fact_inventory(df):
     df.drop_duplicates(subset=['InventoryKey'], keep='last', inplace=True)
 
     return df
-
-
-def define_tables(engine):
-    metadata = MetaData()
-
-    DimVehicle = Table('DimVehicle', metadata, autoload_with=engine)
-    DimDealership = Table('DimDealership', metadata, autoload_with=engine)
-    DimDate = Table('DimDate', metadata, autoload_with=engine)
-    FactSales = Table('FactSales', metadata, autoload_with=engine)
-    FactInventory = Table('FactInventory', metadata, autoload_with=engine)
-
-    return DimVehicle, DimDealership, DimDate, FactSales, FactInventory
-
-
-
 
 
 def load(df, table_name, conn):
@@ -309,8 +291,6 @@ def load(df, table_name, conn):
 
     except Exception as e:
         logging.error(f"Error loading data into {table_name}: {e}")
-
-
 
 
 def run_etl(conn):
