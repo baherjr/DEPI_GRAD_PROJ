@@ -242,84 +242,102 @@ This week focuses on implementing a data warehouse to consolidate inventory and 
   - SQLAlchemy (for database connectivity)
   - Any additional libraries used in the project
 
-## Data Warehouse Schema (Star Schema)
+## Car Retail Data Warehouse Schema (Star Schema)
+
+
 
 ### Dimension Tables
 
-1. **DIM_PRODUCT**
+1. **DimVehicle**
    ```sql
-   CREATE TABLE DIM_PRODUCT (
-       product_id INT PRIMARY KEY,
-       product_name VARCHAR(100),
-       category VARCHAR(50),
-       unit_price DECIMAL(10, 2),
-       supplier_id INT
-   );
+   CREATE TABLE DimVehicle (
+        VehicleKey INT PRIMARY KEY,
+        VehicleID NVARCHAR(50),
+        Make NVARCHAR(50),
+        Model NVARCHAR(50),
+        Year INT,
+        FuelType NVARCHAR(50),
+        Transmission NVARCHAR(50),
+        Engine NVARCHAR(50),
+        NumberOfDoors INT,
+        Drivetrain NVARCHAR(50),
+        MaxPower DECIMAL(10, 2),
+        Price DECIMAL(10, 2)
+    );
    ```
 
-2. **DIM_STORE**
+2. **DimDealership**
    ```sql
-   CREATE TABLE DIM_STORE (
-       store_id INT PRIMARY KEY,
-       store_name VARCHAR(100),
-       city VARCHAR(50),
-       state VARCHAR(50),
-       country VARCHAR(50)
-   );
+    CREATE TABLE DimDealership (
+        DealershipKey INT PRIMARY KEY,
+        DealershipID NVARCHAR(50),
+        Location NVARCHAR(100),
+		OwnerType NVARCHAR(100),
+		SellerType NVARCHAR(100)
+    );
    ```
 
-3. **DIM_DATE**
+3. **DimDate**
    ```sql
-   CREATE TABLE DIM_DATE (
-       date_id INT PRIMARY KEY,
-       full_date DATE,
-       year INT,
-       quarter INT,
-       month INT,
-       day INT,
-       day_of_week VARCHAR(10)
-   );
+    CREATE TABLE DimDate (
+        DateKey INT PRIMARY KEY,
+        Date DATE,
+        Year INT,
+		Month INT,
+        MonthName NVARCHAR(50),
+        Quarter INT
+    );
    ```
 
-4. **DIM_CUSTOMER**
+### Fact Tables
+
+1. **FactSales**
    ```sql
-   CREATE TABLE DIM_CUSTOMER (
-       customer_id INT PRIMARY KEY,
-       customer_name VARCHAR(100),
-       email VARCHAR(100),
-       city VARCHAR(50),
-       state VARCHAR(50),
-       country VARCHAR(50)
-   );
+     CREATE TABLE FactSales (
+        SaleID INT PRIMARY KEY,
+        DateKey INT,
+        VehicleKey INT,
+        DealershipKey INT,
+        QuantitySold INT,
+        TotalAmount DECIMAL(10, 2),
+        FOREIGN KEY (DateKey) REFERENCES DimDate(DateKey),  -- Reference to DimDate
+        FOREIGN KEY (VehicleKey) REFERENCES DimVehicle(VehicleKey),  -- Reference to DimVehicle
+        FOREIGN KEY (DealershipKey) REFERENCES DimDealership(DealershipKey)  -- Reference to DimDealership
+    );
    ```
 
-### Fact Table
-
-**FACT_SALES**
-```sql
-CREATE TABLE FACT_SALES (
-    sale_id INT PRIMARY KEY,
-    product_id INT,
-    store_id INT,
-    date_id INT,
-    customer_id INT,
-    quantity INT,
-    total_amount DECIMAL(10, 2),
-    FOREIGN KEY (product_id) REFERENCES DIM_PRODUCT(product_id),
-    FOREIGN KEY (store_id) REFERENCES DIM_STORE(store_id),
-    FOREIGN KEY (date_id) REFERENCES DIM_DATE(date_id),
-    FOREIGN KEY (customer_id) REFERENCES DIM_CUSTOMER(customer_id)
-);
-```
+2. **FactInventory**
+   ```sql
+    CREATE TABLE FactInventory (
+        InventoryID INT,
+        DateKey INT,
+        VehicleKey INT,
+        StockLevel INT,
+        FOREIGN KEY (VehicleKey) REFERENCES DimVehicle(VehicleKey),
+        FOREIGN KEY (DateKey) REFERENCES DimDate(DateKey),
+		PRIMARY KEY (InventoryID, DateKey)
+    );
+   ```
 
 ### Indexes
+
 To improve query performance, the following indexes have been created:
 
 ```sql
-CREATE INDEX idx_product ON FACT_SALES(product_id);
-CREATE INDEX idx_store ON FACT_SALES(store_id);
-CREATE INDEX idx_date ON FACT_SALES(date_id);
-CREATE INDEX idx_customer ON FACT_SALES(customer_id);
+    CREATE INDEX IX_DimVehicle_VehicleID ON DimVehicle (VehicleID);
+    CREATE INDEX IX_DimVehicle_Make ON DimVehicle (Make);
+    CREATE INDEX IX_DimVehicle_Model ON DimVehicle (Model);
+    CREATE INDEX IX_DimVehicle_Year ON DimVehicle (Year);
+    CREATE INDEX IX_DimDealership_DealershipID ON DimDealership (DealershipID);
+    CREATE INDEX IX_DimDealership_Location ON DimDealership (Location);
+    CREATE INDEX IX_DimDate_Year ON DimDate (Year);
+    CREATE INDEX IX_DimDate_Month ON DimDate (Month);
+    CREATE INDEX IX_DimDate_Quarter ON DimDate (Quarter);
+    CREATE INDEX IX_FactSales_DateKey ON FactSales (DateKey);
+    CREATE INDEX IX_FactSales_VehicleKey ON FactSales (VehicleKey);
+    CREATE INDEX IX_FactSales_DealershipKey ON FactSales (DealershipKey);
+    CREATE INDEX IX_FactInventory_DateKey ON FactInventory (DateKey);
+    CREATE INDEX IX_FactInventory_VehicleKey ON FactInventory (VehicleKey);
 ```
 
 ## Data Pipeline (DataPipeline.py)
@@ -446,75 +464,4 @@ if __name__ == "__main__":
 
 This structure allows for easy processing of multiple tables in sequence.
 
-
-
-
-### Script Overview
-
-```python
-import os
-import schedule
-import time
-from DataPipeline import run_etl
-
-def run_all_etl_jobs():
-    print("Starting ETL jobs...")
-    
-    etl_jobs = [
-        ('dim-product-csv.csv', 'DIM_PRODUCT'),
-        ('dim-store-csv.csv', 'DIM_STORE'),
-        ('dim-date-csv.csv', 'DIM_DATE'),
-        ('dim-customer-csv.csv', 'DIM_CUSTOMER'),
-        ('fact-sales-csv.csv', 'FACT_SALES')
-    ]
-    
-    for csv_file, table_name in etl_jobs:
-        csv_path = os.path.join('data', csv_file)
-        if os.path.exists(csv_path):
-            print(f"Processing {csv_file}...")
-            run_etl(csv_path, table_name)
-        else:
-            print(f"Warning: {csv_file} not found in the data directory.")
-    
-    print("All ETL jobs completed.")
-
-# Schedule the job to run daily at 1:00 AM
-schedule.every().day.at("01:00").do(run_all_etl_jobs)
-
-if __name__ == "__main__":
-    print("ETL automation script started. Press Ctrl+C to exit.")
-    try:
-        while True:
-            schedule.run_pending()
-            time.sleep(60)  # Wait for 60 seconds before checking schedule again
-    except KeyboardInterrupt:
-        print("ETL automation script stopped.")
-```
-
-### Key Features
-
-1. **Job Definition**: The script defines a list of ETL jobs, each consisting of a CSV file name and its corresponding table name in the data warehouse.
-
-2. **File Checking**: Before running each ETL job, the script checks if the CSV file exists in the specified 'data' directory.
-
-3. **Scheduled Execution**: The ETL process is scheduled to run daily at 1:00 AM using the `schedule` library.
-
-4. **Continuous Operation**: The script runs continuously, checking every 60 seconds if there are any scheduled jobs to run.
-
-5. **Graceful Termination**: The script can be stopped safely using a keyboard interrupt (Ctrl+C).
-
-### Usage
-
-To use this automation script:
-
-1. Ensure all required CSV files are placed in a 'data' directory.
-2. Run the script using Python: `python automated-etl-script.py`
-3. The script will continue running until manually stopped.
-
-### Considerations
-
-- **Server Deployment**: For production use, consider deploying this script on a server that runs continuously.
-- **Error Handling**: Implement more robust error handling and logging for production environments.
-- **Monitoring**: Set up alerts to notify administrators of any failures in the ETL process.
-- **Data Freshness**: Adjust the schedule as needed based on how frequently your source data is updated.
 
