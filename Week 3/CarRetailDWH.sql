@@ -111,3 +111,118 @@ BEGIN
     CREATE INDEX IX_FactInventory_DateKey ON FactInventory (DateKey);
     CREATE INDEX IX_FactInventory_VehicleKey ON FactInventory (VehicleKey);
 END
+
+
+-- Total sales by year and quarter
+SELECT 
+    d.Year,
+    d.Quarter,
+    SUM(f.TotalAmount) AS TotalSales,
+    COUNT(DISTINCT f.SaleID) AS NumberOfSales
+FROM 
+    FactSales f
+    JOIN DimDate d ON f.DateKey = d.DateKey
+GROUP BY 
+    d.Year, d.Quarter
+ORDER BY 
+    d.Year, d.Quarter;
+
+-- Top 5 best-selling vehicle models
+SELECT TOP 5
+    v.Make,
+    v.Model,
+    SUM(f.QuantitySold) AS TotalUnitsSold,
+    SUM(f.TotalAmount) AS TotalRevenue
+FROM 
+    FactSales f
+    JOIN DimVehicle v ON f.VehicleKey = v.VehicleKey
+GROUP BY 
+    v.Make, v.Model
+ORDER BY 
+    TotalUnitsSold DESC;
+
+-- Sales performance by dealership location
+SELECT 
+    d.Location,
+    COUNT(DISTINCT f.SaleID) AS NumberOfSales,
+    SUM(f.TotalAmount) AS TotalRevenue,
+    AVG(f.TotalAmount) AS AverageTransactionValue
+FROM 
+    FactSales f
+    JOIN DimDealership d ON f.DealershipKey = d.DealershipKey
+GROUP BY 
+    d.Location
+ORDER BY 
+    TotalRevenue DESC;
+
+-- Monthly inventory levels for a specific brand
+SELECT 
+    v.Make,
+    v.Model,
+    d.Year,
+    d.MonthName,
+    AVG(i.StockLevel) AS AverageStockLevel
+FROM 
+    FactInventory i
+    JOIN DimVehicle v ON i.VehicleKey = v.VehicleKey
+    JOIN DimDate d ON i.DateKey = d.DateKey
+WHERE 
+    v.Make = 'Toyota'
+GROUP BY 
+    v.Make, v.Model, d.Year, d.MonthName, d.Month
+ORDER BY 
+    d.Year, d.Month;
+
+
+-- Dealership performance comparison
+SELECT 
+    d.DealershipID,
+    d.Location,
+    d.OwnerType,
+    d.SellerType,
+    COUNT(DISTINCT f.SaleID) AS NumberOfSales,
+    SUM(f.TotalAmount) AS TotalRevenue,
+    AVG(f.TotalAmount) AS AverageTransactionValue
+FROM 
+    FactSales f
+    JOIN DimDealership d ON f.DealershipKey = d.DealershipKey
+GROUP BY 
+    d.DealershipID, d.Location, d.OwnerType, d.SellerType
+ORDER BY 
+    TotalRevenue DESC;
+
+-- Seasonal sales patterns
+SELECT 
+    d.MonthName,
+    SUM(f.QuantitySold) AS TotalUnitsSold,
+    SUM(f.TotalAmount) AS TotalRevenue
+FROM 
+    FactSales f
+    JOIN DimDate d ON f.DateKey = d.DateKey
+GROUP BY 
+    d.Month, d.MonthName
+ORDER BY 
+    d.Month;
+
+-- Vehicle price range analysis
+SELECT 
+    CASE 
+        WHEN v.Price < 20000 THEN 'Under $20k'
+        WHEN v.Price BETWEEN 20000 AND 40000 THEN '$20k - $40k'
+        WHEN v.Price BETWEEN 40001 AND 60000 THEN '$40k - $60k'
+        ELSE 'Over $60k'
+    END AS PriceRange,
+    COUNT(DISTINCT f.SaleID) AS NumberOfSales,
+    SUM(f.TotalAmount) AS TotalRevenue
+FROM 
+    FactSales f
+    JOIN DimVehicle v ON f.VehicleKey = v.VehicleKey
+GROUP BY 
+    CASE 
+        WHEN v.Price < 20000 THEN 'Under $20k'
+        WHEN v.Price BETWEEN 20000 AND 40000 THEN '$20k - $40k'
+        WHEN v.Price BETWEEN 40001 AND 60000 THEN '$40k - $60k'
+        ELSE 'Over $60k'
+    END
+ORDER BY 
+    PriceRange;
