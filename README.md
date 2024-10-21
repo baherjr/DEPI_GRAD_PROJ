@@ -511,7 +511,7 @@ def run_etl(conn):
             logging.info("Database connection closed.")
 ```
 
-This function orchestrates the entire ETL process for all tables, including extraction, transformation, and loading steps.
+This function orchestrates all tables' ETL process, including extraction, transformation, and loading steps.
 
 ### Main Execution
 
@@ -523,6 +523,64 @@ if __name__ == "__main__":
 ```
 
 This structure allows for the processing of multiple tables in sequence, with proper error handling and logging throughout the ETL pipeline.
+# Week 3
 
+## Azure Analytics Tools Integration
+
+### Tools Used
+
+#### 1. Azure Data Studio
+Azure Data Studio is an integrated development environment designed for data professionals. It provides a user-friendly interface for managing and working with databases.
+
+**Key Features:**
+- **Query Development and Testing:** Allows for efficient creation, execution, and testing of SQL queries.
+- **Database Management Tasks:** Supports a variety of database management functions, including monitoring and administration.
+- **Integrated Development Environment:** Offers a rich set of tools for data development and analysis.
+- **Built-in Version Control Support:** Facilitates collaboration and versioning of SQL scripts and notebooks.
+
+#### 2. Azure Synapse Analytics
+Azure Synapse Analytics is an integrated analytics service that combines big data and data warehousing.
+
+**Key Features:**
+- **Parallel Processing Capabilities:** Enables high-performance data processing through parallel execution of queries.
+- **Data Integration Workflows:** Streamlines the process of integrating and transforming data from multiple sources.
+- **Large-scale Data Transformations:** Provides tools for executing complex data transformations across large datasets.
+- **Performance Optimization Features:** Offers advanced capabilities for tuning and optimizing query performance.
+
+### Integration Benefits
+
+- **Seamless Workflow:** The integration of Azure Data Studio and Azure Synapse Analytics allows for a smooth transition between development and deployment, enhancing overall efficiency.
+- **Enhanced Productivity:** Users can leverage the strengths of both tools to accelerate their data analytics processes, leading to quicker insights.
+- **Comprehensive Analytics:** The combined capabilities provide a robust framework for handling diverse analytics requirements, from data ingestion to advanced querying and reporting.
+
+## Price Prediction Model
+
+### Objective
+Develop a predictive model to forecast Manufacturer's Suggested Retail Price (MSRP) for vehicles, enabling data-driven pricing insights based on historical trends.
+
+### Chosen Approach
+Implementation of the SARIMA (Seasonal ARIMA) model, selected for its ability to capture both temporal patterns and seasonal variations in vehicle pricing.
+
+### Data Foundation
+Analysis based on a comprehensive vehicle dataset, incorporating temporal features (Year) and historical pricing data (Actual MSRP) for accurate predictions.
+
+# Car Retail Sales Prediction using ARIMA
+
+This notebook outlines the process of predicting car retail sales using the ARIMA (AutoRegressive Integrated Moving Average) forecasting model.
+
+## 1. Importing Libraries
+
+We begin by importing the necessary libraries for data manipulation, visualization, machine learning preprocessing, and time series modeling.
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import sklearn
+from sklearn.preprocessing import LabelEncoder
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.stattools import adfuller
+from sklearn.metrics import mean_squared_error
+```
 
 
