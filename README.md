@@ -564,23 +564,5 @@ Implementation of the SARIMA (Seasonal ARIMA) model, selected for its ability to
 ### Data Foundation
 Analysis based on a comprehensive vehicle dataset, incorporating temporal features (Year) and historical pricing data (Actual MSRP) for accurate predictions.
 
-# Car Retail Sales Prediction using ARIMA
-
-This notebook outlines the process of predicting car retail sales using the ARIMA (AutoRegressive Integrated Moving Average) forecasting model.
-
-## 1. Importing Libraries
-
-We begin by importing the necessary libraries for data manipulation, visualization, machine learning preprocessing, and time series modeling.
-
-```python
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import sklearn
-from sklearn.preprocessing import LabelEncoder
-from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.tsa.stattools import adfuller
-from sklearn.metrics import mean_squared_error
-```
 
 
