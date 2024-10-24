@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/omarb/Downloads/DEPI_GRAD_PROJ/Week4/mlruns/0/57fe8027df6c4c3f90bb64117ecadaa1/artifacts
+end_time: 1729529597004
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 57fe8027df6c4c3f90bb64117ecadaa1
+run_name: righteous-gnat-495
+run_uuid: 57fe8027df6c4c3f90bb64117ecadaa1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1729529596967
+status: 3
+tags: []
+user_id: omarb

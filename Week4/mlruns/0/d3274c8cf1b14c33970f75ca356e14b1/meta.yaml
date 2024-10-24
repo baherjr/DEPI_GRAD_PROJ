@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/omarb/Downloads/DEPI_GRAD_PROJ/Week4/mlruns/0/d3274c8cf1b14c33970f75ca356e14b1/artifacts
+end_time: 1729529953466
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d3274c8cf1b14c33970f75ca356e14b1
+run_name: brawny-gnu-595
+run_uuid: d3274c8cf1b14c33970f75ca356e14b1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1729529953444
+status: 4
+tags: []
+user_id: omarb

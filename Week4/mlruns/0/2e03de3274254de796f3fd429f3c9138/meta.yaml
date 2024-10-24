@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/omarb/Downloads/DEPI_GRAD_PROJ/Week4/mlruns/0/2e03de3274254de796f3fd429f3c9138/artifacts
+end_time: 1729721543585
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 2e03de3274254de796f3fd429f3c9138
+run_name: persistent-squid-103
+run_uuid: 2e03de3274254de796f3fd429f3c9138
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1729721543545
+status: 3
+tags: []
+user_id: omarb

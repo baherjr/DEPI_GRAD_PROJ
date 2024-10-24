@@ -111,7 +111,7 @@ BEGIN
     CREATE INDEX IX_FactInventory_DateKey ON FactInventory (DateKey);
     CREATE INDEX IX_FactInventory_VehicleKey ON FactInventory (VehicleKey);
 END
-
+---------------------------------------------------------------------------------------
 
 -- Total sales by year and quarter
 SELECT 
@@ -226,3 +226,6 @@ GROUP BY
     END
 ORDER BY 
     PriceRange;
+
+
+------------------------------------------

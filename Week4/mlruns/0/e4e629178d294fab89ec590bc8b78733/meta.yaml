@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/omarb/Downloads/DEPI_GRAD_PROJ/Week4/mlruns/0/e4e629178d294fab89ec590bc8b78733/artifacts
+end_time: 1729530240382
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: e4e629178d294fab89ec590bc8b78733
+run_name: useful-wolf-149
+run_uuid: e4e629178d294fab89ec590bc8b78733
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1729530240328
+status: 3
+tags: []
+user_id: omarb

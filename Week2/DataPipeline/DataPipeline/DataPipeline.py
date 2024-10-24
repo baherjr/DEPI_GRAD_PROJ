@@ -1,8 +1,7 @@
 import pandas as pd
-import pyodbc
 import os
 import logging
-from sqlalchemy import create_engine, Table, MetaData, insert
+from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from sqlalchemy import text
 
@@ -38,11 +37,6 @@ def extract(file_path):
     """
     Extract data from a CSV file into a DataFrame.
 
-    Args:
-        file_path (str): Path to the CSV file.
-
-    Returns:
-        DataFrame: The extracted DataFrame or an empty DataFrame on error.
     """
     try:
         # Read the CSV file into a DataFrame

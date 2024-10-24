@@ -19,7 +19,7 @@ def write_csv(file_path, headers, data):
 
 
 # Read the input data
-input_data = read_csv('data.csv')
+input_data = read_csv('../Week4/data.csv')
 
 # Create DimVehicle
 vehicles = {}

@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\Week2\DataPipeline\DataPipeline\data.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\Week2\DataPipeline\DataPipeline\dim_date.csv">
           <value>
             <Attribute>

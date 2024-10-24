@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/omarb/Downloads/DEPI_GRAD_PROJ/Week4/mlruns/0/f4857bbb2b304e998771b666e30df5fd/artifacts
+end_time: 1729530502164
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f4857bbb2b304e998771b666e30df5fd
+run_name: shivering-owl-968
+run_uuid: f4857bbb2b304e998771b666e30df5fd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1729530502120
+status: 3
+tags: []
+user_id: omarb

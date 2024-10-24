@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/omarb/Downloads/DEPI_GRAD_PROJ/Week4/mlruns/699684148780844880/786241f38f7e4e2b97bc4787396b4b9c/artifacts
+end_time: 1729531545527
+entry_point_name: ''
+experiment_id: '699684148780844880'
+lifecycle_stage: active
+run_id: 786241f38f7e4e2b97bc4787396b4b9c
+run_name: arima_model_20241021_2025
+run_uuid: 786241f38f7e4e2b97bc4787396b4b9c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1729531545506
+status: 4
+tags: []
+user_id: omarb
